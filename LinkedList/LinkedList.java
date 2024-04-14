@@ -13,8 +13,8 @@ documentation page: https://docs.oracle.com/javase/8/docs/api/java/util/LinkedLi
 
 public class LinkedList<T> {
 
-    //custom node class... technically
-    //there is no singly option for memory efficiency.
+    //custom node class... technically there
+    //is no singly option for memory efficiency.
     public static class Node<T> {
         public T data;
         public Node next;
