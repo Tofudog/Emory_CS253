@@ -22,20 +22,33 @@ public class MyTrie implements TrieInterface {
     //where the markings for some node represents some
     //prefix. Additionally, it's easy to define L.
     public static class TrieNode {
-        public boolean marked[]; //all the visited letters up to this pref
+        public static int instances = 0; //easily calculate number of TrieNodes called
+        public int wordIdx;
+        public int numMarked; //making this.isLeaf() more efficient
+        public boolean marked[]; //all the visited letters after cur pref
         public boolean isWord; //determining whether this pref already a complete word
         public TrieNode child[]; //all the children in respective locations
+        public TrieNode parent;
         public String pref;
-        public TrieNode(int L, String P) {
+
+        public TrieNode(int L, String PREF) {
+            numMarked = 0;
             marked = new boolean[L];
             child = new TrieNode[L];
+            parent = null;
             for (int i=0; i<L; i++) {
                 marked[i] = false;
                 child[i] = null;
             }
             isWord = false;
-            pref = P;
+            pref = PREF;
         }
+
+        //custom method to check externality and substring efficiently
+        public boolean isLeaf() {
+            return (isWord && numMarked==0);
+        }
+
         //for debugging purposes, make it easier to visualize a TrieNode
         public String toString() {
             String ret = "prefix=";
@@ -93,12 +106,18 @@ public class MyTrie implements TrieInterface {
                 //create a new TrieNode at this specific letter for this specific pref
                 curNode.marked[mapped_idx] = true;
                 curNode.child[mapped_idx] = new TrieNode(num_letters, curPref);
+                curNode.child[mapped_idx].parent = curNode;
                 curNode = curNode.child[mapped_idx];
             }
         }
+        curNode.isWord = true;
+        //for debugging, checking what each of these end-insertions will be...
+        System.out.println("Finished inserting " + curNode.pref);
     }
 
     //for now, getting the exact search position will be another task.
+    //this implementation is simple: find out the (first) position of a word
+    //by recording it through insertion of a word as well as its length (removal is tricky?)
     public int search(String word) {
         if (!contains(word)) {
             return -1;
@@ -106,14 +125,40 @@ public class MyTrie implements TrieInterface {
         return 0;
     }
 
+    //removes all instances of word
     public boolean remove(String word) {
+        //case 1: word is not in the trie... trivial
+        if (!contains(word)) {
+            return false;
+        }
 
-        return false;
+        //case 2: word is a substring of another word
+        //if curNode has even a single child, it is a substring
+        TrieNode curNode = this.get(word);
+        if (!curNode.isLeaf()) {
+            curNode.isWord = false;
+        }
+
+        //case 3: word has ancestor with another, but also external nodes
+        //e.g. "word" and "words".
+        while (!curNode.isLeaf()) {
+            TrieNode prevNode = curNode;
+            curNode = curNode.parent;
+            prevNode = null;
+        }
+
+        return true;
     }
 
     public boolean contains(String word) {
-
-        return false;
+        TrieNode curNode = root;
+        for (int i=0; i<word.length(); i++) {
+            char let = word.charAt(i);
+            int mapped_idx = letter_to_pos.get(let);
+            if (!curNode.marked[mapped_idx]) {return false;}
+            curNode = curNode.child[mapped_idx];
+        }
+        return curNode!=null && curNode.isWord;
     }
 
     public boolean containsPrefix(String pref) {
@@ -127,19 +172,44 @@ public class MyTrie implements TrieInterface {
         return true;
     }
 
+    public TrieNode get(String word) {
+        if (!contains(word)) {
+            return null;
+        }
+        TrieNode curNode = root;
+        for (int i=0; i<word.length(); i++) {
+            char let = word.charAt(i);
+            int mapped_idx = letter_to_pos.get(let);
+            curNode = curNode.child[mapped_idx];
+        }
+        return curNode;
+    }
+
     public static void main(String[] args) {
         MyTrie trie = new MyTrie(); //using standard english alphabet
         String[] word_list = {
-            "dog", "dove", "done",
+            "dog", "doggy", "dove", "done",
             "tree", "frogger", "frozen"
         };
         for (String WORD : word_list) {
             trie.insert(WORD);
         }
         System.out.println(trie.root);
-        // System.out.println(trie.contains("frog"));
-        // System.out.println(trie.containsPrefix("frog"));
-        // System.out.println(trie.containsPrefix("dull"));
-        // System.out.println(trie.containsPrefix("dog"));
+        System.out.println(trie.contains("frog"));
+        System.out.println(trie.contains("dove"));
+        System.out.println(trie.containsPrefix("frog"));
+        System.out.println(trie.containsPrefix("dull"));
+        System.out.println(trie.containsPrefix("dogg"));
+        System.out.println(trie.containsPrefix("doggi"));
+        if (trie.remove("done")) {
+            System.out.println("REMOVED done");
+        }
+        if (trie.remove("dog")) {
+            System.out.println("REMOVED dog");
+        }
+        if (trie.remove("tree")) {
+            System.out.println("REMOVED tree");
+        }
+        System.out.println(trie.contains("tree"));
     }
 }
