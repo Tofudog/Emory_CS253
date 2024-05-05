@@ -4,6 +4,13 @@ author: Leonardo de Farias
 Aggregating several different Tree implementations into
 this file. Additionally, I wrote a naive normal LL-based
 binary search tree with O(h) = O(n) search/insertion
+
+Possible edge cases:
+    ---> remove node with two child: if nothing in left ST, then won't work (must right ST)
+
+Better Functionality:
+    ---> make a separate swap() function for two nodes
+    ---> improve default visualization of 'Node' class
 */
 
 import java.util.*;
@@ -49,7 +56,7 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
         }
     }
 
-    public Node<T> root;
+    private Node<T> root;
     private int num_nodes;
 
     public BinaryTree() {
@@ -95,7 +102,7 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
         }
         newNode.parent = curNode;
 
-        System.out.println(newNode + "\n\n");
+        //System.out.println(newNode + "\n\n");
 
         num_nodes++;
     }
@@ -104,11 +111,11 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
     //sequentially visits left/right depending on criteria: O(h)
     public boolean search(T data) {
         boolean found = false;
-        System.out.println("querying for " + data);
+        //System.out.println("querying for " + data);
 
         Node<T> curNode = root;
         while (true) {
-            System.out.println("curNode: " + curNode.data);
+            //System.out.println("curNode: " + curNode.data);
             
             if (this.compare(curNode.data, data) > 0) {
                 curNode = curNode.left;
@@ -126,7 +133,8 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
 
         System.out.println();
         if (curNode != null) {
-            System.out.println(curNode.data + "..." + this.depth(curNode));
+            int d = this.depth(curNode);
+            //System.out.println(curNode.data + " depth = " + this.depth(curNode));
         }
         return found;
     }
@@ -137,7 +145,6 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
         
         Node<T> curNode = root;
         while (curNode != null) {
-
             if (this.compare(curNode.data, data) > 0) {
                 curNode = curNode.left;
             }
@@ -153,12 +160,12 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
                 if (curNode.left!=null) {num_child++;}
                 if (curNode.right!=null) {num_child++;}
 
+                //is the cur node a root, or left/right child
                 boolean isRoot = (curNode == root);
                 boolean isLeft = (curNode.parent!=null && curNode.parent.left == curNode);
                 boolean isRight = (curNode.parent!=null && curNode.parent.right == curNode);
 
                 if (num_child == 0) {
-                   System.out.println(curNode);
                     if (isRoot) {
                         root = null;
                     }
@@ -168,7 +175,7 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
                     else {
                         curNode.parent.right = null;
                     }
-                    System.out.println(data + " node has no children");
+                    //System.out.println(data + " node has no children");
                 }
                 else if (num_child == 1) {
                     Node<T> childNode = (curNode.left!=null) ? curNode.left:curNode.right; 
@@ -177,21 +184,53 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
                         root.parent = null;
                     }
                     else if (isLeft) {
+                        childNode.parent = curNode.parent;
                         curNode.parent.left = childNode;
                     }
                     else {
+                        childNode.parent = curNode.parent;
                         curNode.parent.right = childNode;
                     }
-                    System.out.println(data + " node has 1 child");
+                    //System.out.println(data + " node has 1 child");
                 }
                 else {
-                    //binary tree structure is disrupted
-                    System.out.println(data + " node has 2 child");
-                }
+                    //the idea is to get the maximum of the left subtree
+                    //or the minimum of the right subtree to replace cur
+                    //arbitrarily, I'll do the max of the left subtree.
+                    Node<T> maxLeftST = curNode.left;
+                    while (maxLeftST.right != null) {
+                        maxLeftST = maxLeftST.right;
+                    }
+                    //System.out.println(maxLeftST);
 
+                    maxLeftST.parent.right = maxLeftST.left;
+                    if (isRoot) {
+                        maxLeftST.left = root.left;
+                        maxLeftST.right = root.right;
+                        root = maxLeftST;
+                        if (root.left != null) {root.left.parent = root;}
+                        if (root.right != null) {root.right.parent = root;}
+                    }
+                    else if (isLeft) {
+                        maxLeftST.left = curNode.left;
+                        maxLeftST.right = curNode.right;
+                        curNode.parent.left = maxLeftST;
+                        if (curNode.left != null) {curNode.left.parent = maxLeftST;}
+                        if (curNode.right != null) {curNode.right.parent = maxLeftST;}
+                    }
+                    else {
+                        maxLeftST.left = curNode.left;
+                        maxLeftST.right = curNode.right;
+                        curNode.parent.right = maxLeftST;
+                        if (curNode.left != null) {curNode.left.parent = maxLeftST;}
+                        if (curNode.right != null) {curNode.right.parent = maxLeftST;}
+                    }
+                    if (maxLeftST.left == maxLeftST) {maxLeftST.left = null;}
+                    if (maxLeftST.right == maxLeftST) {maxLeftST.right = null;}
+                    //System.out.println(data + " node has 2 child");
+                }
                 break;
             }
-
         }
 
         num_nodes--;
@@ -200,12 +239,15 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
 
     //finds depth of some node in O(h)
     public int depth(Node<T> node) {
+        //System.out.println("Finding the depth for\n "+node + "\n\n\n");
         int DEPTH = 0;
         Node<T> curNode = node;
-        while (curNode != root) {
+        while (curNode != null && !curNode.equals(root)) {
+            System.out.println(curNode.data + "\n\n\n");
             curNode = curNode.parent;
             DEPTH++;
         }
+        //System.out.println("depth for "+node.data + " is " + DEPTH);
         return DEPTH;
     }
 
@@ -219,6 +261,37 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
         return 1 + Math.max(height_subtree1, height_subtree2);
     }
 
+    //general recursive methods for visualizing and traversing the tree
+    public void preorder() {
+        this.preorderWrapper(root);
+    }
+    private void preorderWrapper(Node<T> curNode) {
+        if (curNode == null) {return;}
+        System.out.println(curNode.data);
+        preorderWrapper(curNode.left);
+        preorderWrapper(curNode.right);
+    }
+
+    public void inorder() {
+        this.inorderWrapper(root);
+    }
+    private void inorderWrapper(Node<T> curNode) {
+        if (curNode == null) {return;}
+        inorderWrapper(curNode.left);
+        System.out.println(curNode.data);
+        inorderWrapper(curNode.right);
+    }
+
+    public void postorder() {
+        this.postorderWrapper(root);
+    }
+    private void postorderWrapper(Node<T> curNode) {
+        if (curNode == null) {return;}
+        postorderWrapper(curNode.left);
+        postorderWrapper(curNode.right);
+        System.out.println(curNode.data);
+    }
+
     public int NUM_NODES() {
         return num_nodes;
     }
@@ -227,17 +300,18 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
 
 public class Tree {
 
+    //default (untested) driver code
     public static void main(String[] args) {
         BinaryTree<String> bt = new BinaryTree<String>();
-        String examples[][] = {
-            {"a", "n"},
-            {"r", "g"},
-            {"apple", "apples"},
-            {"Mo", "Mo"},
-        };
-        for (int i=0; i<examples.length; i++) {
-            bt.testCompare(examples[i][0], examples[i][1]);
-        }
+        // String examples[][] = {
+        //     {"a", "n"},
+        //     {"r", "g"},
+        //     {"apple", "apples"},
+        //     {"Mo", "Mo"},
+        // };
+        // for (int i=0; i<examples.length; i++) {
+        //     bt.testCompare(examples[i][0], examples[i][1]);
+        // }
 
         bt.insert("frog");
         bt.insert("apple");
@@ -246,6 +320,10 @@ public class Tree {
         bt.insert("do");
         bt.insert("dont");
         bt.insert("don");
+
+        bt.preorder();
+
+        System.out.println("\n");
 
         System.out.println(bt.search("fr"));
         System.out.println(bt.search("frog"));
@@ -259,11 +337,11 @@ public class Tree {
             );
         }
 
+        System.out.println(bt.remove("frog"));
+
         System.out.println(bt.search("lemon"));
         System.out.println(bt.search("dew"));
 
-        System.out.println("depth of root: " + bt.depth(bt.root));
-        System.out.println("height of root: " + bt.height(bt.root));
 
     }
 }
