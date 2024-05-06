@@ -10,6 +10,7 @@ THIS WILL BE TESTED AND DEBUGGED LATER!!!
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class MST<T> {
 
@@ -74,8 +75,19 @@ public class MST<T> {
 
     //implementations for sparse and dense graphs
     public int prim() {
-        int weight_sum = 0;
+        return this.primDense();
+    }
 
+    //implementation ideal for dense graphs: O(n^2)
+    public int primDense() {
+        
+        return weight_sum;
+    }
+
+    //implementation ideal for sparse graphs: O(mlog(n))
+    public int primSparse() {
+        int weight_sum = 0;
+        
         return weight_sum;
     }
 

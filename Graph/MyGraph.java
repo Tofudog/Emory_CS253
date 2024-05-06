@@ -1,14 +1,13 @@
-// import java.util.ArrayList;
-// import java.util.HashMap;
-// import java.util.HashSet;
-// import java.util.Iterator;
-// import java.util.Queue;
-// import java.util.LinkedList;
-// import java.util.Scanner;
-// import java.util.Comparator;
+/*
+author: Leonardo de Farias
+
+This is a generalized custom Graph
+*/
+
 import java.util.*;
 
 //auxiliary custom DSU class
+//this is the original, but worse implementation of DSU
 class DSU<T> {
 
 	//records direct parent of parent[i] (but may not be root!)
@@ -185,7 +184,6 @@ public class MyGraph<V, E> {
     public Edge<E> getEdge(Vertex<V> u, Vertex<V> v){
         return u.outgoing.get(v);
     }
-
 
     //theoretically, doing dist check
     //could be constant with variables checking levels

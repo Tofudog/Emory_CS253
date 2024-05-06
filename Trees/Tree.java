@@ -11,6 +11,7 @@ Possible edge cases:
 Better Functionality:
     ---> make a separate swap() function for two nodes
     ---> improve default visualization of 'Node' class
+    ---> make it where swapping two nodes is by only changing .element
 */
 
 import java.util.*;
@@ -31,7 +32,7 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
         }
     }
 
-    class Node<T> {
+    protected class Node<T> {
         public T data;
         public Node<T> left;
         public Node<T> right;
@@ -66,12 +67,12 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
 
     //quite simply, inserting data into the BST
     //this process takes O(h), where h is the height of root.
-    public void insert(T data) {
+    public Node<T> insert(T data, T _dummy) {
         Node<T> newNode = new Node<T>(data);
         if (num_nodes == 0) {
             root = newNode;
             num_nodes++;
-            return;
+            return newNode;
         }
 
         //finish the insertion once the node reaches a leaf.
@@ -105,11 +106,16 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
         //System.out.println(newNode + "\n\n");
 
         num_nodes++;
+        return newNode;
+    }
+    public void insert(T data) {
+        Node<T> temp = this.insert(data, data);
     }
 
     //checks whether value is in BST and
     //sequentially visits left/right depending on criteria: O(h)
     public boolean search(T data) {
+        //can just change this method to whether other search yields null
         boolean found = false;
         //System.out.println("querying for " + data);
 
@@ -137,6 +143,33 @@ class BinaryTree<T extends Comparable<T>> implements Comparator<T> {
             //System.out.println(curNode.data + " depth = " + this.depth(curNode));
         }
         return found;
+    }
+    public Node<T> search(T data, T _dummy) {
+        //System.out.println("querying for " + data);
+
+        Node<T> curNode = root;
+        while (true) {
+            //System.out.println("curNode: " + curNode.data);
+            
+            if (this.compare(curNode.data, data) > 0) {
+                curNode = curNode.left;
+            }
+            else if (this.compare(curNode.data, data) < 0) {
+                curNode = curNode.right;
+            }
+            else {
+                break;
+            }
+
+            if (curNode == null) {break;}
+        }
+
+        System.out.println();
+        if (curNode != null) {
+            int d = this.depth(curNode);
+            //System.out.println(curNode.data + " depth = " + this.depth(curNode));
+        }
+        return curNode;
     }
 
     //deletes a node in O(h)

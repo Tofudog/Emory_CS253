@@ -1,4 +1,8 @@
+/*
+author: Leonardo de Farias
 
+CURRENTLY UNFINISHED!
+*/
 
 //this class is created to support balancing operations
 //whenever a node is inserted/deleted.
