@@ -69,6 +69,11 @@ public class DSU<T> {
         }
     }
 
+    //checking if value is even in the dsu
+    public boolean contains(T value) {
+        return parent.containsKey(value);
+    }
+
     public String toString() {
         String ret = "";
         HashMap<T, ArrayList<T>> components = new HashMap<T, ArrayList<T>>();

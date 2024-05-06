@@ -7,49 +7,59 @@ specifically Kruskal's and Prim's. Edges will be integers.
 THIS WILL BE TESTED AND DEBUGGED LATER!!!
 */
 
-import DSU.java;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collections;
 
 public class MST<T> {
 
-    static class Edge<T, T> {
+    class Edge {
         public T first;
         public T second;
         public Integer weight;
-        public Edge(T first, T second, T W) {
+        public Edge(T first, T second, Integer W) {
             this.first = first;
             this.second = second;
             weight = W;
         }
+        public String toString() {
+            String ret = "";
+            ret += "   "+weight+"\n";
+            ret += first + " --- " + second;
+            return ret;
+        }
     }
 
-    private HashMap<T, ArrayList<T>> graph;
-    private ArrayList<Edge<T, T>> edges;
+    //private HashMap<T, ArrayList<T>> graph;
+    private ArrayList<Edge> edges;
     private DSU<T> dsu;
 
     public MST() {
-        graph = new HashMap<T, ArrayList<T>>();
-        edges = new ArrayList<Edge<T, T>>();
+        //graph = new HashMap<T, ArrayList<T>>();
+        edges = new ArrayList<Edge>();
         dsu = new DSU<T>();
     }
 
     public void addEdge(T val1, T val2, Integer W) {
-        Edge<T, T> edge = new Edge<T, T>(val1, val2, W);
+        Edge edge = new Edge(val1, val2, W);
         edges.add(edge);
+        if (!dsu.contains(val1)) {dsu.make_set(val1);}
+        if (!dsu.contains(val2)) {dsu.make_set(val2);}
     }
 
     public int kruskal() {
         int weight_sum = 0;
 
         //sort the edges by weight nondecreasing order...
-        Collections.sort(edges, new Comparator<Edge<T,T>>() {
+        Collections.sort(edges, new Comparator<Edge>() {
             @Override
-            public int compare(Edge<T, T> edge1, Edge<T, T> edge2) {
+            public int compare(Edge edge1, Edge edge2) {
                 if (edge1.weight >= edge2.weight) {return 1;}
                 return -1;
             }
         });
 
-        for (Edge<T, T> EDGE : edges) {
+        for (Edge EDGE : edges) {
             T rep1 = dsu.find(EDGE.first);
             T rep2 = dsu.find(EDGE.second);
             //check if the two nodes belong to the same component
@@ -58,9 +68,11 @@ public class MST<T> {
                 weight_sum += EDGE.weight;
             }
         }
+
         return weight_sum;
     }
 
+    //implementations for sparse and dense graphs
     public int prim() {
         int weight_sum = 0;
 
@@ -69,6 +81,14 @@ public class MST<T> {
 
     public static void main(String[] args) {
         MST<String> mst = new MST();
-        
+        mst.addEdge("a", "b", 1);
+        mst.addEdge("b", "c", 1);
+        mst.addEdge("a", "c", 5);
+        mst.addEdge("a", "d", 4);
+        mst.addEdge("c", "d", 8);
+        mst.addEdge("c", "e", 2);
+        mst.addEdge("c", "f", 6);
+        mst.addEdge("d", "f", 7);
+        System.out.println(mst.kruskal());
     }
 }
